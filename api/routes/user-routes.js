@@ -36,64 +36,40 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-    // Capture all the routes
-    let routes = req.body.routes;
-    // Get all the stops in an array
-    let allStops = [];
-    routes.forEach(route => {
-        // Add id to all the stops
-        route.stops = route.stops.map(stop => {
-            stop['_id'] = mongoose.Types.ObjectId();
-            return stop;
-        });
-
-        allStops = allStops.concat(route.stops);
+    // Add Ids to each stops.
+    req.body.stops = req.body.stops.map(stop => {
+        stop['_id'] = mongoose.Types.ObjectId();
+        return stop;
     });
 
-    // Save all stops at once.
-    RouteStop
-        .create(allStops)
+    // Save route
+    RouteStop.create(req.body.stops)
         .then(stops => {
-            // Storing all the stops. So that, we can add 
-            // these saved values back while returning
-            allStops = stops;
-            // Adding id to all the routes
-            routes = routes.map(route => {
-                route = new UserRoute({
-                    _id: mongoose.Types.ObjectId(),
-                    ...route,
-                });
-
-                return route;
+            req.body.stops = stops;
+            // Add Id to User Route
+            const userRoute = new UserRoute({
+                _id: mongoose.Types.ObjectId(),
+                ...req.body
             });
-
-            // Save all the routes at once.
-            return UserRoute.create(routes);
+            return userRoute.save();
         })
-        .then(userRoutes => {
-            userRoutes = userRoutes.map(route => {
-                return {
-                    _id: route._id,
-                    name: route.name,
-                    direction: route.direction,
-                    routeId: route.routeId,
-                    status: route.status,
-                    stops: route.stops.map(
-                        routeStop => allStops.find(
-                            createdRouteStop => createdRouteStop._id === routeStop
-                        )
-                    )
-                };
-            });
+        .then(userRoute => {
+            const payload = {
+                _id: userRoute._id,
+                name: userRoute.name,
+                direction: userRoute.direction,
+                routeId: userRoute.routeId,
+                status: userRoute.status,
+                stops: req.body.stops
+            };
 
             // return the success result
             res.status(200).json({
                 message: 'Route saved successfully',
-                payload: userRoutes
+                payload: payload
             });
         })
         .catch(err => {
-            console.log('err : ', err);
             // Return the error
             res.status(500).json({
                 message: 'Internal server error',
@@ -137,6 +113,7 @@ router.patch('/:routeId', (req, res, next) => {
     const id = req.params.routeId;
     const updateObj = {};
 
+    console.log('body : ', req.body);
     for (const prop of Object.keys(req.body)) {
         updateObj[prop] = req.body[prop];
     }

@@ -5,7 +5,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 // Importing routes.
-const userRoutes = require('./api/routes/user-routes')
+const userRoutes = require('./api/routes/user-routes');
+const routeStops = require('./api/routes/route-stops');
 
 // establish connection with mongodb
 mongoose.connect(
@@ -42,6 +43,7 @@ app.use((req, res, next) => {
 
 // Routes that handle API requests.
 app.use('/user-routes', userRoutes);
+app.use('/route-stop', routeStops);
 
 // Incase of no routes were able to handle the request,
 // We throw the error saying no routes found.

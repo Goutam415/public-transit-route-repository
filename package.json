@@ -1,0 +1,21 @@
+{
+  "name": "maps_backend",
+  "version": "1.0.0",
+  "description": "This project basically allows to signup/login a user. Create/update/delete/read user\\'s own routes. Helps user to visualize the routes on google maps.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.3",
+    "mongoose": "^6.2.3",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

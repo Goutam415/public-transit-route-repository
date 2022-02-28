@@ -92,12 +92,12 @@ router.get('/:routeId', (req, res, next) => {
             if (result) {
                 res.status(200).json({
                     message: 'Received ID ',
-                    result
+                    payload: result
                 });
             } else {
                 res.status(404).json({
                     message: 'This route does not exist',
-                    result: {}
+                    payload: {}
                 });
             }
         })
@@ -116,7 +116,6 @@ router.patch('/:routeId', (req, res, next) => {
     const id = req.params.routeId;
     const updateObj = {};
 
-    console.log('body : ', req.body);
     for (const prop of Object.keys(req.body)) {
         updateObj[prop] = req.body[prop];
     }

@@ -44,7 +44,6 @@ router.post('/', (req, res, next) => {
         return stop;
     });
 
-    console.log('direction : ', req.body);
     // Save route
     RouteStop.create(stops)
         .then(result => {
@@ -219,6 +218,29 @@ router.delete('/:routeId', (req, res, next) => {
                     name: err.name,
                     message: err.message
                 }
+            });
+        });
+});
+
+router.post('/delete', (req, res, next) => {
+    // Add Ids to each stops.
+
+    // Save route
+    UserRoute.deleteMany({
+            _id: {
+                $in: req.body
+            }
+        })
+        .then(() => {
+            res.status(200).json({
+                message: 'Selected Items deleted Successfully.'
+            });
+        })
+        .catch(err => {
+            // Return the error
+            res.status(500).json({
+                message: 'Internal server error',
+                error: err
             });
         });
 });

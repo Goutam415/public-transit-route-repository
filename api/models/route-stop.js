@@ -18,7 +18,7 @@ const routeStopSchema = mongoose.Schema({
         type: String,
         require: true,
         unique: true,
-        default: Math.random().toString(16).slice(2)
+        default: new Date().getTime()
     },
 });
 

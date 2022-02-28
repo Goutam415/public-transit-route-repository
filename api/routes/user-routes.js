@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const UserRoute = require('../models/user-route');
 const RouteStop = require('../models/route-stop');
+var _ = require('lodash');
 
 
 router.get('/', (req, res, next) => {
@@ -72,7 +73,6 @@ router.post('/', (req, res, next) => {
             });
         })
         .catch(err => {
-            console.log('error saving : ', err);
             // Return the error
             res.status(500).json({
                 message: 'Internal server error',
@@ -114,29 +114,72 @@ router.get('/:routeId', (req, res, next) => {
 
 router.patch('/:routeId', (req, res, next) => {
     const id = req.params.routeId;
-    const updateObj = {};
+    let updateObj = {};
 
     for (const prop of Object.keys(req.body)) {
         updateObj[prop] = req.body[prop];
     }
+    let stopsToCreate = _.cloneDeep(updateObj['stops'].filter(stop => !stop._id || stop._id === null));
 
-    UserRoute
-        .updateOne({
-            _id: id
-        }, {
-            $set: updateObj
+    stopsToCreate = stopsToCreate.map(stop => {
+        delete stop.stopId;
+        stop['_id'] = mongoose.Types.ObjectId();
+        return stop;
+    });
+
+    RouteStop.create(stopsToCreate)
+        .then(stops => {
+            const existingStops = updateObj['stops'].filter(stop => stop._id !== null);
+            updateObj['stops'] = existingStops.concat(stops);
         })
-        .exec()
-        .then(result => {
-            if (result.matchedCount > 0) {
-                res.status(200).json({
-                    message: 'Route updated successfully'
+        .then(() => {
+            return UserRoute
+                .updateOne({
+                    _id: id
+                }, {
+                    $set: updateObj
+                })
+                .exec();
+        })
+        .then(routeUpdateResult => {
+
+            const stopUpdateOb$ = [];
+            updateObj['stops'].forEach(stop => {
+                stopUpdateOb$.push(
+                    RouteStop.updateOne({
+                        _id: stop._id
+                    }, {
+                        $set: stop
+                    }).exec()
+                )
+            });
+            Promise.all(stopUpdateOb$)
+                .then(result => {
+                    if (routeUpdateResult.matchedCount > 0) {
+                        res.status(200).json({
+                            message: 'Route updated successfully'
+                        });
+                    } else {
+                        res.status(404).json({
+                            message: 'This ruser oute does not exist'
+                        });
+                    }
+                })
+                .catch(err => {
+                    if (routeUpdateResult.matchedCount > 0) {
+                        res.status(200).json({
+                            message: 'Route updated successfully. But, could not update stops.'
+                        });
+                    } else {
+                        res.status(500).json({
+                            message: 'internal server error',
+                            error: {
+                                name: err.name,
+                                message: err.message
+                            }
+                        });
+                    }
                 });
-            } else {
-                res.status(404).json({
-                    message: 'This route does not exist'
-                });
-            }
         })
         .catch(err => {
             res.status(500).json({

@@ -48,9 +48,10 @@ router.post('/', (req, res, next) => {
             req.body.stops = stops;
             // Add Id to User Route
             const userRoute = new UserRoute({
-                _id: mongoose.Types.ObjectId(),
-                ...req.body
+                ...req.body,
+                _id: mongoose.Types.ObjectId()
             });
+
             return userRoute.save();
         })
         .then(userRoute => {
@@ -70,6 +71,7 @@ router.post('/', (req, res, next) => {
             });
         })
         .catch(err => {
+            console.log('error saving : ', err);
             // Return the error
             res.status(500).json({
                 message: 'Internal server error',

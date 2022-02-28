@@ -9,19 +9,19 @@ var _ = require('lodash');
 router.get('/', (req, res, next) => {
     UserRoute
         .find()
-        .select('_id routeId status name stops')
+        .select('_id routeId status name direction stops')
         .populate('stops', 'name description lat lng stopId')
         .exec()
         .then(result => {
             if (result.length > 0) {
                 res.status(200).json({
                     message: result.length + ' routes found',
-                    result
+                    payload: result
                 });
             } else {
                 res.status(404).json({
                     message: 'This route does not exist',
-                    result
+                    payload: result
                 });
             }
         })
@@ -44,6 +44,7 @@ router.post('/', (req, res, next) => {
         return stop;
     });
 
+    console.log('direction : ', req.body);
     // Save route
     RouteStop.create(stops)
         .then(result => {
@@ -85,7 +86,7 @@ router.get('/:routeId', (req, res, next) => {
     const id = req.params.routeId;
     UserRoute
         .findById(id)
-        .select('_id routeId status name stops')
+        .select('_id routeId status name direction stops')
         .populate('stops', 'name description lat lng stopId')
         .exec()
         .then(result => {

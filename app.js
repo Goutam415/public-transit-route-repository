@@ -25,11 +25,13 @@ app.use(bodyParser.json());
 
 // Handling CORS setup
 app.use((req, res, next) => {
-    req.header('Access-Control-Allow-Origin', '*');
-    req.header('Access-Control-Allow-Headers',
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers',
         'Origin, X-Requested-With, Content-Type, Accept, Authorization'
     );
+    res.setHeader('Access-Control-Allow-Credentials', true);
 
+    // Request methods you wish to allow
     if (req.method === 'OPTIONS') {
         res.header('Access-Control-Allow-Methods',
             'PUT, POST, PATCH, DELETE, GET'

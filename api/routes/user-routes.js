@@ -37,15 +37,16 @@ router.get('/', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
     // Add Ids to each stops.
-    req.body.stops = req.body.stops.map(stop => {
+    let stops = req.body.stops.map(stop => {
+        delete stop.stopId;
         stop['_id'] = mongoose.Types.ObjectId();
         return stop;
     });
 
     // Save route
-    RouteStop.create(req.body.stops)
-        .then(stops => {
-            req.body.stops = stops;
+    RouteStop.create(stops)
+        .then(result => {
+            stops = result;
             // Add Id to User Route
             const userRoute = new UserRoute({
                 ...req.body,
@@ -61,7 +62,7 @@ router.post('/', (req, res, next) => {
                 direction: userRoute.direction,
                 routeId: userRoute.routeId,
                 status: userRoute.status,
-                stops: req.body.stops
+                stops
             };
 
             // return the success result
